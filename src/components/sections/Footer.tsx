@@ -11,6 +11,7 @@ export default function Footer() {
   const links = [
     { name: 'Home', href: '#home' },
     { name: 'Work', href: '#work' },
+    { name: 'Stills', href: '#stills' },
     { name: 'Services', href: '#services' },
     { name: 'Studio', href: '#studio' },
     { name: 'Journal', href: '#journal' },

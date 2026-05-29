@@ -3,6 +3,7 @@
 import Navbar from '@/components/sections/Navbar';
 import HeroSection from '@/components/sections/HeroSection';
 import FeaturedWork from '@/components/sections/FeaturedWork';
+import PhotosSection from '@/components/sections/PhotosSection';
 import AboutStudio from '@/components/sections/AboutStudio';
 import ServicesGrid from '@/components/sections/ServicesGrid';
 import ShowreelSection from '@/components/sections/ShowreelSection';
@@ -24,6 +25,9 @@ export default function Home() {
 
         {/* 3. Luxury Featured Work Portfolio Grid */}
         <FeaturedWork />
+
+        {/* 3b. Cinematic Stills & Photos Showcase */}
+        <PhotosSection />
 
         {/* 4. About Studio Agency Copy & Stats */}
         <AboutStudio />
