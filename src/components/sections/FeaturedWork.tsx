@@ -157,6 +157,24 @@ export default function FeaturedWork() {
     setActiveIndex((prev) => (prev + 1) % N);
   };
 
+  // Auto-play active video on hover, and pause on leave
+  useEffect(() => {
+    if (hoveredId) {
+      const video = videoRefs.current[hoveredId];
+      if (video) {
+        video.currentTime = 0;
+        video.play().catch(() => {});
+      }
+    } else {
+      // Pause all videos when not hovering
+      Object.values(videoRefs.current).forEach((video) => {
+        if (video) {
+          video.pause();
+        }
+      });
+    }
+  }, [hoveredId]);
+
   // Autoplay slideshow timer (slides every 4 seconds)
   useEffect(() => {
     if (N <= 1 || isPaused) return;
