@@ -71,7 +71,7 @@ const projects: Project[] = [
   },
   {
     id: '7',
-    title: 'Editorial Fashion Show',
+    title: 'Editorial Fashion Story',
     category: 'Fashion',
     year: '2026',
     description: 'Dynamic coverage of seasonal runway showcases and backstage treatments.',
@@ -120,8 +120,8 @@ const categories = [
 export default function FeaturedWork() {
   const [activeCategory, setActiveCategory] = useState('All');
   const [activeIndex, setActiveIndex] = useState(0);
-  const [isHovered, setIsHovered] = useState(false);
-  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const videoRefs = useRef<{ [key: string]: HTMLVideoElement | null }>({});
 
   // Filter projects by category
   const filteredProjects = activeCategory === 'All'
@@ -136,17 +136,15 @@ export default function FeaturedWork() {
   const N = filteredProjects.length;
   const activeProject = filteredProjects[activeIndex] || filteredProjects[0];
 
-  // Auto-play active video when hovered
+  // Auto-play video on hover
   useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-    if (isHovered) {
+    if (!hoveredId) return;
+    const video = videoRefs.current[hoveredId];
+    if (video) {
       video.currentTime = 0;
       video.play().catch(() => {});
-    } else {
-      video.pause();
     }
-  }, [isHovered, activeIndex]);
+  }, [hoveredId]);
 
   const handlePrev = () => {
     if (N <= 1) return;
@@ -158,235 +156,173 @@ export default function FeaturedWork() {
     setActiveIndex((prev) => (prev + 1) % N);
   };
 
-  // Helper to determine indices
-  const prevIndex = (activeIndex - 1 + N) % N;
-  const nextIndex = (activeIndex + 1) % N;
-
-  const prevProject = filteredProjects[prevIndex];
-  const nextProject = filteredProjects[nextIndex];
-
   return (
     <MotionSection
       id="work"
-      className="bg-brand-bg-secondary py-24 md:py-32 overflow-hidden"
+      className="relative w-full h-[75vh] sm:h-[80vh] md:h-[90vh] flex flex-col justify-between py-12 overflow-hidden bg-brand-black select-none"
     >
-      <div className="max-w-7xl mx-auto px-4 md:px-6 text-center">
+      <style>{`
+        .motion-slider-track {
+          --card-width: 170px;
+          --card-gap: 16px;
+        }
+        @media (min-width: 768px) {
+          .motion-slider-track {
+            --card-width: 250px;
+            --card-gap: 24px;
+          }
+        }
+      `}</style>
+
+      {/* 1. Widescreen Cross-Fading Background Stills */}
+      <div className="absolute inset-0 z-0">
+        <AnimatePresence mode="wait">
+          {activeProject && (
+            <motion.div
+              key={activeProject.id}
+              initial={{ opacity: 0, scale: 1.04 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 1.04 }}
+              transition={{ duration: 0.8, ease: 'easeOut' }}
+              className="absolute inset-0"
+            >
+              <img
+                src={activeProject.image}
+                alt={activeProject.title}
+                className="w-full h-full object-cover filter brightness-[0.25] contrast-[1.08] saturate-[0.85]"
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+        {/* Cinematic overlays */}
+        <div className="absolute inset-0 bg-black/35 z-1 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/10 to-black/60 z-2 pointer-events-none" />
+      </div>
+
+      {/* 2. Section Header (Centered Overlay) */}
+      <div className="relative z-10 text-center px-6">
+        <span className="text-[10px] font-semibold tracking-[0.3em] text-white/50 uppercase block mb-2 sm:mb-3 font-general">
+          Selected Projects
+        </span>
+        <h2 className="font-clash text-3xl sm:text-4xl md:text-5xl font-bold uppercase tracking-tight text-white mb-2 sm:mb-3">
+          Our Work
+        </h2>
+        <p className="text-white/40 font-light text-[10px] sm:text-xs tracking-wider">
+          Browse the highlights &mdash; click any project to step inside
+        </p>
+      </div>
+
+      {/* 3. Slider Track Overlay & Interactive Cards */}
+      <div className="relative z-10 flex items-center justify-center w-full h-[220px] sm:h-[280px] md:h-[360px] overflow-visible">
         
-        {/* Section Header */}
-        <div className="mb-12 md:mb-16">
-          <span className="text-[10px] font-semibold tracking-[0.25em] text-brand-text-muted uppercase block mb-3 font-general">
-            Selected Projects
-          </span>
-          <h2 className="font-clash text-4xl md:text-5xl font-bold uppercase tracking-tight text-brand-text-primary mb-4">
-            Our Work
-          </h2>
-          <p className="text-brand-text-secondary font-light text-xs md:text-sm max-w-xl mx-auto">
-            Browse the highlights &mdash; click any project to step inside
-          </p>
+        {/* Navigation Arrows (Overlap on Viewport Sides) */}
+        {N > 1 && (
+          <>
+            <button
+              onClick={handlePrev}
+              className="absolute left-4 md:left-[8%] lg:left-[12%] z-30 w-10 h-10 sm:w-12 sm:h-12 rounded-full border border-white/10 bg-black/40 backdrop-blur-md flex items-center justify-center text-white cursor-pointer hover:bg-white hover:text-brand-black hover:border-white transition-all active:scale-95"
+              aria-label="Previous Project"
+            >
+              <svg className="w-4 h-4 fill-current rotate-180" viewBox="0 0 24 24">
+                <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>
+              </svg>
+            </button>
+
+            <button
+              onClick={handleNext}
+              className="absolute right-4 md:right-[8%] lg:right-[12%] z-30 w-10 h-10 sm:w-12 sm:h-12 rounded-full border border-white/10 bg-black/40 backdrop-blur-md flex items-center justify-center text-white cursor-pointer hover:bg-white hover:text-brand-black hover:border-white transition-all active:scale-95"
+              aria-label="Next Project"
+            >
+              <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>
+              </svg>
+            </button>
+          </>
+        )}
+
+        {/* Sliding Cards Track */}
+        <div
+          className="motion-slider-track flex items-center absolute left-0 right-0 h-full transition-transform duration-700 ease-[0.25,1,0.5,1] will-change-transform"
+          style={{
+            transform: `translateX(calc(50% - var(--card-width) / 2 - ${activeIndex} * (var(--card-width) + var(--card-gap))))`,
+          }}
+        >
+          {filteredProjects.map((project, idx) => {
+            const isActive = idx === activeIndex;
+            return (
+              <div
+                key={project.id}
+                onClick={() => setActiveIndex(idx)}
+                onMouseEnter={() => isActive && setHoveredId(project.id)}
+                onMouseLeave={() => setHoveredId(null)}
+                className={`relative shrink-0 rounded-2xl md:rounded-3xl overflow-hidden cursor-pointer transition-all duration-700 ease-[0.25,1,0.5,1]
+                  w-[var(--card-width)] h-[85%] md:h-full
+                  ${isActive 
+                    ? 'scale-100 border-[3px] md:border-4 border-white shadow-2xl opacity-100 z-10 filter-none' 
+                    : 'scale-[0.82] opacity-35 border-2 border-transparent filter grayscale hover:opacity-50 blur-[0.5px]'}`}
+              >
+                {/* Still image */}
+                <img
+                  src={project.image}
+                  alt={project.title}
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+
+                {/* Video Playback (Muted, on Active Card Hover) */}
+                <video
+                  ref={(el) => { videoRefs.current[project.id] = el; }}
+                  src={project.video}
+                  loop
+                  muted
+                  playsInline
+                  className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-600 pointer-events-none z-15
+                    ${hoveredId === project.id ? 'opacity-100' : 'opacity-0'}`}
+                />
+
+                {/* Subtle vignette inside card */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent z-20 pointer-events-none" />
+
+                {/* Card Title Label (Visible inside the active card) */}
+                <div className={`absolute bottom-4 left-4 right-4 md:bottom-6 md:left-6 md:right-6 z-25 text-left transition-all duration-500
+                  ${isActive ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`}
+                >
+                  <span className="text-[7px] font-mono font-bold tracking-[0.25em] text-brand-blue uppercase block mb-1">
+                    {project.category}
+                  </span>
+                  <h3 className="font-clash text-xs sm:text-sm font-bold uppercase tracking-wider text-white line-clamp-2">
+                    {project.title}
+                  </h3>
+                </div>
+
+              </div>
+            );
+          })}
         </div>
 
-        {/* Filter Pills */}
-        <div className="flex flex-wrap items-center justify-center gap-2 md:gap-3 mb-12 md:mb-16 max-w-4xl mx-auto px-4">
+      </div>
+
+      {/* 4. Filter Pills & Category Links (Bottom aligned overlay) */}
+      <div className="relative z-10 w-full max-w-4xl mx-auto px-4 mt-4">
+        {/* Category selector row */}
+        <div className="flex flex-wrap items-center justify-center gap-1.5 md:gap-2.5 max-w-2xl mx-auto py-2 no-scrollbar overflow-x-auto">
           {categories.map((cat) => {
             const isActive = activeCategory === cat.value;
             return (
               <button
                 key={cat.value}
                 onClick={() => setActiveCategory(cat.value)}
-                className={`text-[10px] md:text-xs font-semibold tracking-wider px-5 py-2.5 rounded-full transition-all duration-300 cursor-pointer
+                className={`text-[9px] md:text-[10px] font-semibold tracking-widest px-4 py-2 rounded-full transition-all duration-300 cursor-pointer uppercase
                   ${isActive 
-                    ? 'bg-brand-black text-white shadow-sm scale-102' 
-                    : 'bg-brand-surface/40 text-brand-text-secondary hover:text-brand-text-primary hover:bg-brand-surface/75'}`}
+                    ? 'bg-white text-brand-black shadow-sm scale-102 font-bold' 
+                    : 'bg-white/5 border border-white/5 text-white/55 hover:text-white hover:bg-white/10'}`}
               >
                 {cat.label}
               </button>
             );
           })}
         </div>
-
-        {/* Slider Deck Container */}
-        <div className="relative flex items-center justify-center w-full max-w-7xl mx-auto h-[320px] sm:h-[420px] md:h-[550px] px-2 sm:px-8 gap-4 sm:gap-6 md:gap-8 overflow-hidden select-none">
-          
-          {/* Previous Card (Left side, cropped & greyed out) */}
-          {N > 1 && prevProject && (
-            <motion.div
-              onClick={handlePrev}
-              className="hidden md:flex relative w-[18%] h-[85%] rounded-3xl overflow-hidden cursor-pointer opacity-30 hover:opacity-50 filter grayscale transition-all duration-500 shrink-0"
-              initial={{ opacity: 0, x: -50 }}
-              animate={{ opacity: 0.3, x: 0 }}
-              exit={{ opacity: 0, x: -50 }}
-              key={`prev-${prevProject.id}`}
-            >
-              <img
-                src={prevProject.image}
-                alt={prevProject.title}
-                className="absolute inset-0 w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-brand-black/20" />
-              {/* Back Arrow button */}
-              <div className="absolute bottom-6 right-6 w-10 h-10 rounded-full border border-white/30 bg-black/40 backdrop-blur-sm flex items-center justify-center text-white z-10">
-                <svg className="w-4 h-4 fill-current rotate-180" viewBox="0 0 24 24">
-                  <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>
-                </svg>
-              </div>
-            </motion.div>
-          )}
-
-          {/* Active Card (Center, wide & full-color) */}
-          <AnimatePresence mode="wait">
-            {activeProject && (
-              <motion.div
-                className="relative w-full md:w-[64%] h-full rounded-3xl overflow-hidden bg-brand-black shadow-2xl shrink-0 cursor-pointer"
-                initial={{ opacity: 0, scale: 0.96 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.96 }}
-                transition={{ duration: 0.5, ease: [0.25, 1, 0.5, 1] }}
-                key={`active-${activeProject.id}`}
-                onMouseEnter={() => setIsHovered(true)}
-                onMouseLeave={() => setIsHovered(false)}
-              >
-                {/* Image still */}
-                <img
-                  src={activeProject.image}
-                  alt={activeProject.title}
-                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out"
-                />
-
-                {/* Video Playback (on Hover) */}
-                <video
-                  ref={videoRef}
-                  src={activeProject.video}
-                  loop
-                  muted
-                  playsInline
-                  className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 pointer-events-none z-10
-                    ${isHovered ? 'opacity-100' : 'opacity-0'}`}
-                />
-
-                {/* Overlay vignette */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 z-20" />
-
-                {/* Left/Right controls (shown on mobile, overlap on sides) */}
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handlePrev();
-                  }}
-                  className="md:hidden absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full border border-white/20 bg-black/40 backdrop-blur-md flex items-center justify-center text-white z-30 active:scale-95 transition-transform"
-                >
-                  <svg className="w-4 h-4 fill-current rotate-180" viewBox="0 0 24 24">
-                    <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>
-                  </svg>
-                </button>
-
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleNext();
-                  }}
-                  className="md:hidden absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full border border-white/20 bg-black/40 backdrop-blur-md flex items-center justify-center text-white z-30 active:scale-95 transition-transform"
-                >
-                  <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                    <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>
-                  </svg>
-                </button>
-
-                {/* Project Metadata HUD */}
-                <div className="absolute top-6 left-6 right-6 z-25 flex justify-between items-center text-[8px] sm:text-[9px] font-mono text-white/50 tracking-widest uppercase">
-                  <span>CLASSIFICATION // {activeProject.category}</span>
-                  <span>{activeProject.year}</span>
-                </div>
-
-                {/* Project Title & Description (Bottom) */}
-                <div className="absolute bottom-6 left-6 right-6 sm:bottom-8 sm:left-8 sm:right-8 z-25 text-left flex justify-between items-end gap-6">
-                  <div className="max-w-md">
-                    <h3 className="font-clash text-xl sm:text-2xl font-bold uppercase tracking-wider text-white mb-2 leading-tight">
-                      {activeProject.title}
-                    </h3>
-                    <p className="text-[11px] sm:text-xs text-white/60 font-light leading-relaxed">
-                      {activeProject.description}
-                    </p>
-                  </div>
-                  
-                  {/* Circle Action Button */}
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border border-white/30 bg-white/10 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white hover:text-brand-black transition-all duration-300 shrink-0">
-                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <line x1="7" y1="17" x2="17" y2="7" />
-                      <polyline points="7 7 17 7 17 17" />
-                    </svg>
-                  </div>
-                </div>
-
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Next Card (Right side, cropped & greyed out) */}
-          {N > 1 && nextProject && (
-            <motion.div
-              onClick={handleNext}
-              className="hidden md:flex relative w-[18%] h-[85%] rounded-3xl overflow-hidden cursor-pointer opacity-30 hover:opacity-50 filter grayscale transition-all duration-500 shrink-0"
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 0.3, x: 0 }}
-              exit={{ opacity: 0, x: 50 }}
-              key={`next-${nextProject.id}`}
-            >
-              <img
-                src={nextProject.image}
-                alt={nextProject.title}
-                className="absolute inset-0 w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-brand-black/20" />
-              {/* Forward Arrow button */}
-              <div className="absolute bottom-6 left-6 w-10 h-10 rounded-full border border-white/30 bg-black/40 backdrop-blur-sm flex items-center justify-center text-white z-10">
-                <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                  <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>
-                </svg>
-              </div>
-            </motion.div>
-          )}
-
-        </div>
-
-        {/* Bottom Thumbnail Timeline */}
-        <div className="w-full max-w-5xl mx-auto mt-12 md:mt-16 px-4">
-          <div className="flex items-center gap-3 overflow-x-auto py-4 px-2 no-scrollbar scroll-smooth">
-            {filteredProjects.map((p, idx) => {
-              const isActive = activeIndex === idx;
-              return (
-                <div
-                  key={`thumb-${p.id}`}
-                  onClick={() => setActiveIndex(idx)}
-                  className="flex flex-col items-start shrink-0 cursor-pointer group"
-                >
-                  {/* Thumbnail Image Box */}
-                  <div
-                    className={`w-[110px] sm:w-[130px] md:w-[160px] aspect-video rounded-xl overflow-hidden relative transition-all duration-300 border-2
-                      ${isActive 
-                        ? 'border-brand-black scale-102 opacity-100 shadow-md' 
-                        : 'border-transparent opacity-50 group-hover:opacity-85'}`}
-                  >
-                    <img
-                      src={p.image}
-                      alt={p.title}
-                      className="absolute inset-0 w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-brand-black/10" />
-                  </div>
-                  {/* Title Label */}
-                  <span
-                    className={`text-[8px] sm:text-[9px] font-semibold tracking-wider uppercase mt-2.5 transition-colors duration-300 text-left w-full truncate max-w-[110px] sm:max-w-[130px] md:max-w-[160px]
-                      ${isActive ? 'text-brand-text-primary' : 'text-brand-text-muted group-hover:text-brand-text-secondary'}`}
-                  >
-                    {p.title}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
       </div>
+
     </MotionSection>
   );
 }
