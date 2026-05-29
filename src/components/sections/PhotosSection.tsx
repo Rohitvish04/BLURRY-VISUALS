@@ -284,7 +284,7 @@ export default function PhotosSection() {
                 </div>
 
                 {/* Camera EXIF Details HUD */}
-                <div className="grid grid-cols-3 gap-x-6 gap-y-2 border-t md:border-t-0 md:border-l border-white/10 pt-4 md:pt-0 md:pl-8 text-[9px] font-mono text-white/70 uppercase tracking-widest">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-2 border-t md:border-t-0 md:border-l border-white/10 pt-4 md:pt-0 md:pl-8 text-[9px] font-mono text-white/70 uppercase tracking-widest">
                   <div className="flex flex-col">
                     <span className="text-white/40 mb-0.5">CAMERA</span>
                     <span>{activePhoto.camera}</span>

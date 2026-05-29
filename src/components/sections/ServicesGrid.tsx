@@ -231,7 +231,7 @@ export default function ServicesGrid() {
                 exit={{ opacity: 0, y: -15 }}
                 transition={{ duration: 0.4, ease: 'easeOut' }}
               >
-                <GlassCard hoverEffect={false} className="border border-brand-silver/40 bg-brand-surface/50 p-8 md:p-10 relative overflow-hidden min-h-[440px] flex flex-col justify-between shadow-sm">
+                <GlassCard hoverEffect={false} className="border border-brand-silver/40 bg-brand-surface/50 p-6 md:p-10 relative overflow-hidden min-h-[440px] flex flex-col justify-between shadow-sm">
                   <div>
                     {/* Top step badge HUD */}
                     <div className="flex justify-between items-start mb-6">

@@ -81,7 +81,7 @@ export default function ContactSection() {
           </div>
 
           {/* Right Column: Luxury Form */}
-          <div className="lg:col-span-7 bg-brand-surface/50 p-8 md:p-12 rounded-3xl border border-brand-silver/40 shadow-sm">
+          <div className="lg:col-span-7 bg-brand-surface/50 p-6 md:p-12 rounded-3xl border border-brand-silver/40 shadow-sm">
             <form onSubmit={handleSubmit} className="space-y-8">
               {/* Name Field */}
               <div className="flex flex-col gap-2 relative">
