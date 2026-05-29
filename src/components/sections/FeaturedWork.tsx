@@ -121,6 +121,7 @@ export default function FeaturedWork() {
   const [activeCategory, setActiveCategory] = useState('All');
   const [activeIndex, setActiveIndex] = useState(0);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [isPaused, setIsPaused] = useState(false);
   const videoRefs = useRef<{ [key: string]: HTMLVideoElement | null }>({});
 
   // Filter projects by category
@@ -156,9 +157,20 @@ export default function FeaturedWork() {
     setActiveIndex((prev) => (prev + 1) % N);
   };
 
+  // Autoplay slideshow timer (slides every 4 seconds)
+  useEffect(() => {
+    if (N <= 1 || isPaused) return;
+    const interval = setInterval(() => {
+      setActiveIndex((prev) => (prev + 1) % N);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [N, isPaused]);
+
   return (
     <MotionSection
       id="work"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
       className="relative bg-brand-bg-primary py-20 md:py-28 overflow-hidden select-none flex flex-col items-center"
     >
       <style>{`
